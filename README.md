@@ -1,80 +1,82 @@
-# Test Case RAG Frontend
+# 测试用例 RAG 前端
 
-A Vue 3 + Vite frontend for managing a test-case knowledge base and generating reusable test ideas with RAG.
+这是一个基于 Vue 3 + Vite 的前端项目，用于管理测试用例知识库，并通过 RAG 生成可复用的测试思路。
 
-## Features
+## 功能说明
 
-- Show backend health and model status (Chat / Embedding)
-- Add test cases into the knowledge base
-- Browse all indexed test cases
-- Run reuse search and generation from new requirement text
+- 展示后端健康状态和模型状态（Chat / Embedding）
+- 向知识库写入测试用例
+- 浏览已索引的测试用例
+- 基于新需求文本执行复用检索与生成
 
-## Tech Stack
+## 技术栈
 
 - Vue 3
 - Vite
 
-## Requirements
+## 环境要求
 
-- Node.js 18+ (LTS recommended)
+- Node.js 18+（建议使用 LTS 版本）
 - npm 9+
-- A running backend API service (default: `http://127.0.0.1:5000`)
+- 可用的后端 API 服务（默认：`http://127.0.0.1:5000`）
 
-## Quick Start
+## 快速开始
 
-1. Install dependencies:
+1. 安装依赖：
 
 ```bash
 npm install
 ```
 
-2. Create env file:
+2. 创建环境变量文件：
 
 ```bash
 cp .env.example .env
 ```
 
-PowerShell:
+PowerShell：
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-3. Start dev server:
+3. 启动开发服务器：
 
 ```bash
 npm run dev
 ```
 
-Default URL: `http://127.0.0.1:5173`
+默认访问地址：`http://127.0.0.1:5173`
 
-## Environment Variable
+## 环境变量
 
-`VITE_API_BASE_URL` is used as backend base URL:
+`VITE_API_BASE_URL` 用于指定后端服务地址：
 
 ```env
 VITE_API_BASE_URL=http://127.0.0.1:5000
 ```
 
-## Backend API Contract
+## 后端 API 约定
 
-The frontend currently calls:
+当前前端会调用以下接口：
 
 - `GET /api/health`
 - `GET /api/cases`
 - `POST /api/cases`
 - `POST /api/reuse`
 
-If frontend and backend are deployed separately, make sure CORS is configured correctly on backend.
+当前列表检索场景会在 `/api/reuse` 请求体中携带 `skip_generation: true`。
 
-## Build and Preview
+如果前后端分开部署，请在后端正确配置 CORS。
+
+## 构建与预览
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## Project Structure
+## 项目结构
 
 ```text
 .

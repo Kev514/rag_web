@@ -118,7 +118,8 @@ async function searchFromApi({ query, page, pageSize }) {
       query,
       page,
       page_size: pageSize,
-      top_k: pageSize
+      top_k: pageSize,
+      skip_generation: true
     })
   });
 
@@ -158,3 +159,86 @@ export async function searchCases({ query, page = 1, pageSize = 6 }) {
   return buildMockResult({ query, page, pageSize });
 }
 
+const REQUIRED_CASE_FIELDS = [
+  "id",
+  "title",
+  "module",
+  "scenario",
+  "preconditions",
+  "steps",
+  "expected_result",
+  "tags",
+  "source",
+  "created_at"
+];
+
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isStringArray(value) {
+  return Array.isArray(value) && value.every((item) => isNonEmptyString(item));
+}
+
+function toCasePayload(input) {
+  const payload = input || {};
+
+  for (const field of REQUIRED_CASE_FIELDS) {
+    if (!(field in payload)) {
+      throw new Error(`Missing required field: ${field}`);
+    }
+  }
+
+  if (!isNonEmptyString(payload.id)) throw new Error("Field `id` must be a non-empty string");
+  if (!isNonEmptyString(payload.title)) throw new Error("Field `title` must be a non-empty string");
+  if (!isNonEmptyString(payload.module)) throw new Error("Field `module` must be a non-empty string");
+  if (!isNonEmptyString(payload.scenario)) throw new Error("Field `scenario` must be a non-empty string");
+  if (!isNonEmptyString(payload.preconditions)) throw new Error("Field `preconditions` must be a non-empty string");
+  if (!isStringArray(payload.steps) || payload.steps.length === 0) {
+    throw new Error("Field `steps` must be a non-empty string array");
+  }
+  if (!isNonEmptyString(payload.expected_result)) {
+    throw new Error("Field `expected_result` must be a non-empty string");
+  }
+  if (!isStringArray(payload.tags) || payload.tags.length === 0) {
+    throw new Error("Field `tags` must be a non-empty string array");
+  }
+  if (!isNonEmptyString(payload.source)) throw new Error("Field `source` must be a non-empty string");
+  if (!isNonEmptyString(payload.created_at) || Number.isNaN(Date.parse(payload.created_at))) {
+    throw new Error("Field `created_at` must be a valid ISO datetime string");
+  }
+
+  return {
+    id: payload.id.trim(),
+    title: payload.title.trim(),
+    module: payload.module.trim(),
+    scenario: payload.scenario.trim(),
+    preconditions: payload.preconditions.trim(),
+    steps: payload.steps.map((item) => item.trim()),
+    expected_result: payload.expected_result.trim(),
+    tags: payload.tags.map((item) => item.trim()),
+    source: payload.source.trim(),
+    created_at: payload.created_at.trim()
+  };
+}
+
+export async function createCase(input) {
+  const payload = toCasePayload(input);
+
+  const res = await fetch(`${apiBase}/api/cases`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Create case failed: ${res.status}${errorText ? ` - ${errorText}` : ""}`);
+  }
+
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return res.json();
+  }
+  return { success: true };
+}
